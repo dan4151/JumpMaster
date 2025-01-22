@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">JumpMaster</string>
+    <string name="main_activity_name">Main View</string>
+    <string name="devices">Bluetooth Devices</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

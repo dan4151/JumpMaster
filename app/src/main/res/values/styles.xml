@@ -1,0 +1,15 @@
+<resources>
+    <!-- If you have an app theme -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimary</item>
+    </style>
+
+    <!-- Custom text style for bottom navigation items -->
+    <style name="BottomNavText" parent="TextAppearance.AppCompat">
+        <!-- Make text bold, white, and larger -->
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+</resources>

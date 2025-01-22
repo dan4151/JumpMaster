@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <!-- App Name -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="JumpMaster App"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:paddingBottom="16dp"
+            android:textColor="@android:color/black" />
+
+        <!-- App Description -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="JumpMaster is your personal jump rope assistant. Track your performance, improve your fitness, and analyze your progress like never before!"
+            android:textSize="16sp"
+            android:lineSpacingExtra="4dp"
+            android:paddingBottom="24dp"
+            android:textColor="@android:color/darker_gray" />
+
+        <!-- Section: Jump Session -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Jump Session"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingBottom="8dp"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="The Jump Session feature lets you train and get real-time data on your jumps, including speed and performance metrics."
+            android:textSize="16sp"
+            android:lineSpacingExtra="4dp"
+            android:paddingBottom="24dp"
+            android:textColor="@android:color/darker_gray" />
+
+        <!-- Section: Statistics -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Statistics"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingBottom="8dp"
+            android:textColor="@android:color/black" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="The Statistics feature provides insights into your past jump sessions, allowing you to track your progress over time and set new goals."
+            android:textSize="16sp"
+            android:lineSpacingExtra="4dp"
+            android:paddingBottom="24dp"
+            android:textColor="@android:color/darker_gray" />
+
+        <!-- Footer -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Happy Jumping!"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:textStyle="italic"
+            android:textColor="@android:color/holo_blue_dark" />
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/activity_load_data"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- Spinner for listing CSV files -->
+    <Spinner
+        android:id="@+id/spinner_csv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- Button to load the selected CSV into the chart -->
+    <Button
+        android:id="@+id/button_load_csv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Load Selected CSV"
+        android:layout_below="@id/spinner_csv"
+        android:layout_marginTop="16dp"
+        android:layout_alignParentStart="true" />
+
+    <!-- Button to go back -->
+    <Button
+        android:id="@+id/button_go_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Go Back"
+        android:layout_below="@id/spinner_csv"
+        android:layout_marginTop="16dp"
+        android:layout_alignParentEnd="true" />
+
+    <!-- LineChart for plotting CSV data -->
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/line_chart"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_below="@id/button_load_csv"
+        android:layout_marginTop="16dp" />
+</RelativeLayout>
