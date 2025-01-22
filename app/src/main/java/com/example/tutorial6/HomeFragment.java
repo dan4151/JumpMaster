@@ -1,64 +1,128 @@
 package com.example.tutorial6;
 
+
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import android.util.Log;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import android.widget.TextView;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link HomeFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class HomeFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String TAG = "HomeFragment";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public HomeFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment HomeFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static HomeFragment newInstance(String param1, String param2) {
-        HomeFragment fragment = new HomeFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
+
+        // Set up the bar chart
+        BarChart barChart = view.findViewById(R.id.bar_chart);
+        setupBarChart(barChart);
+
+        // Set the explanation text with colors
+        TextView explanationTextView = view.findViewById(R.id.chart_color_explanation);
+        String explanation = "Chart Colors: \n• Black: Matches the average or no data available.\n• Red: Below the average for that day.\n• Green: Above the average for that day.";
+        SpannableString spannableExplanation = new SpannableString(explanation);
+
+        // Apply colors to the text
+        int blackStart = explanation.indexOf("Black:");
+        int blackEnd = blackStart + "Black".length();
+        spannableExplanation.setSpan(
+                new ForegroundColorSpan(getResources().getColor(android.R.color.black)),
+                blackStart, blackEnd, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
+        int redStart = explanation.indexOf("Red:");
+        int redEnd = redStart + "Red".length();
+        spannableExplanation.setSpan(
+                new ForegroundColorSpan(getResources().getColor(android.R.color.holo_red_dark)),
+                redStart, redEnd, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
+        int greenStart = explanation.indexOf("Green:");
+        int greenEnd = greenStart + "Green".length();
+        spannableExplanation.setSpan(
+                new ForegroundColorSpan(getResources().getColor(android.R.color.holo_green_dark)),
+                greenStart, greenEnd, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
+        // Set the formatted text to the TextView
+        explanationTextView.setText(spannableExplanation);
+
+        return view;
+    }
+
+
+    private void setupBarChart(BarChart barChart) {
+        // Read weekly data from the CSV file
+        Map<String, Integer> weeklyData = JumpDataManager.readWeeklyData(requireContext());
+
+        // Calculate averages for each day from the all_jump_history.csv file
+        Map<String, Float> dayAverages = JumpDataManager.calculateDayAverages(requireContext());
+
+
+        // Convert data to BarEntries and assign colors
+        ArrayList<BarEntry> entries = new ArrayList<>();
+        ArrayList<Integer> colors = new ArrayList<>();
+        String[] daysOfWeek = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
+        for (int i = 0; i < daysOfWeek.length; i++) {
+            String day = daysOfWeek[i];
+            int jumps = weeklyData.getOrDefault(day, 0);
+            entries.add(new BarEntry(i, jumps));
+
+            // Determine the color based on the average
+            float average = dayAverages.getOrDefault(day, -1f); // Default to -1f if no data
+            if (average == -1f || jumps == average) {
+                colors.add(getResources().getColor(android.R.color.black)); // No data or equal to average
+            } else if (jumps < average) {
+                colors.add(getResources().getColor(android.R.color.holo_red_dark)); // Below average
+            } else {
+                colors.add(getResources().getColor(android.R.color.holo_green_dark)); // Above average
+            }
         }
+
+        // Create the dataset and bar chart
+        BarDataSet dataSet = new BarDataSet(entries, "Jumps Per Day");
+        dataSet.setColors(colors); // Set bar colors dynamically
+
+        BarData barData = new BarData(dataSet);
+
+        // Customize the X-axis labels
+        XAxis xAxis = barChart.getXAxis();
+        barChart.getAxisLeft().setAxisMinimum(0f);
+        barChart.getAxisRight().setAxisMinimum(0f);
+        barChart.getLegend().setEnabled(false);
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(daysOfWeek));
+        xAxis.setGranularity(1f);
+        xAxis.setGranularityEnabled(true);
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+
+        barChart.setData(barData);
+        barChart.invalidate(); // Refresh chart
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false);
-    }
+
+
 }

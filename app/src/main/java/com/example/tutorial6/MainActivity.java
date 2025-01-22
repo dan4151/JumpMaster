@@ -10,7 +10,6 @@ import android.util.Log;
 import android.widget.Toast;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,7 +20,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity
         implements FragmentManager.OnBackStackChangedListener {
@@ -36,6 +34,8 @@ public class MainActivity extends AppCompatActivity
     // Keep track of whether a device has been selected
     // (If your code passes the device address around, store it here after selection)
     private String selectedDeviceAddress = null;
+
+    private TextView homeNavItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +53,12 @@ public class MainActivity extends AppCompatActivity
 
         // Bottom navigation (3 items: Home, Jump Session, Statistics)
         setupBottomNavigation();
+
+        // Create a file for weekly jump data if not existing
+        JumpDataManager.saveWeeklyData(this);
+
+        // Create a cumulative data if not existing and save previous week if new week
+        JumpDataManager.saveCumulativeData(this);
     }
 
     // --------------------------------------------------
@@ -174,6 +180,8 @@ public class MainActivity extends AppCompatActivity
                 findViewById(R.id.nav_statistics)
         };
 
+        homeNavItem = navItems[0];
+
         // Click listener for navigation items
         for (TextView navItem : navItems) {
             navItem.setOnClickListener(v -> {
@@ -181,9 +189,8 @@ public class MainActivity extends AppCompatActivity
                 for (TextView item : navItems) {
                     item.setBackgroundResource(android.R.color.transparent); // Clear previous highlight
                 }
-
-                // Highlight the selected item with bottom_nav_indicator
-                navItem.setBackgroundResource(R.drawable.bottom_nav_indicator);
+                if (selectedDeviceAddress != null)
+                    navItem.setBackgroundResource(R.drawable.bottom_nav_indicator);
 
                 // Handle navigation logic
                 int id = navItem.getId();
@@ -214,9 +221,6 @@ public class MainActivity extends AppCompatActivity
                 }
             });
         }
-
-        // Highlight the default page (e.g., Home) on app start
-        navItems[0].setBackgroundResource(R.drawable.bottom_nav_indicator); // Highlight Home
     }
 
 
@@ -291,6 +295,7 @@ public class MainActivity extends AppCompatActivity
         // Now that a device is selected, go to the TerminalFragment
         // Or simply let user pick it from bottom nav. For example, we force it:
         showFragment("home");
+        homeNavItem.setBackgroundResource(R.drawable.bottom_nav_indicator);
     }
 
     /**

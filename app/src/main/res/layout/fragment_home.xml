@@ -1,83 +1,48 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="@android:color/white">
+    android:orientation="vertical"
+    android:padding="16dp">
 
-    <LinearLayout
+    <!-- App Description -->
+    <TextView
+        android:id="@+id/app_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center">
+        android:text="Welcome to the Jump Rope Tracker! This app helps you monitor your daily and weekly jump performance to stay motivated and achieve your fitness goals."
+        android:textSize="16sp"
+        android:paddingBottom="16dp"
+        android:textStyle="normal" />
 
-        <!-- App Name -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="JumpMaster App"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:paddingBottom="16dp"
-            android:textColor="@android:color/black" />
+    <!-- Title Above the Chart -->
+    <TextView
+        android:id="@+id/chart_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Jump Of The Week"
+        android:textSize="18sp"
+        android:paddingBottom="8dp"
+        android:textStyle="bold"
+        android:gravity="center" />
 
-        <!-- App Description -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="JumpMaster is your personal jump rope assistant. Track your performance, improve your fitness, and analyze your progress like never before!"
-            android:textSize="16sp"
-            android:lineSpacingExtra="4dp"
-            android:paddingBottom="24dp"
-            android:textColor="@android:color/darker_gray" />
+    <!-- Bar Chart -->
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/bar_chart"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_marginBottom="16dp" />
 
-        <!-- Section: Jump Session -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Jump Session"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:paddingBottom="8dp"
-            android:textColor="@android:color/black" />
+    <!-- Explanation for Chart Colors -->
+    <TextView
+        android:id="@+id/chart_color_explanation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="14sp"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp"
+        android:textStyle="italic" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="The Jump Session feature lets you train and get real-time data on your jumps, including speed and performance metrics."
-            android:textSize="16sp"
-            android:lineSpacingExtra="4dp"
-            android:paddingBottom="24dp"
-            android:textColor="@android:color/darker_gray" />
 
-        <!-- Section: Statistics -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Statistics"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:paddingBottom="8dp"
-            android:textColor="@android:color/black" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="The Statistics feature provides insights into your past jump sessions, allowing you to track your progress over time and set new goals."
-            android:textSize="16sp"
-            android:lineSpacingExtra="4dp"
-            android:paddingBottom="24dp"
-            android:textColor="@android:color/darker_gray" />
-
-        <!-- Footer -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Happy Jumping!"
-            android:textSize="18sp"
-            android:gravity="center"
-            android:textStyle="italic"
-            android:textColor="@android:color/holo_blue_dark" />
-    </LinearLayout>
-</ScrollView>
+</LinearLayout>
