@@ -56,7 +56,7 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- START, PAUSE Buttons -->
+        <!-- START, PAUSE, RESET Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -65,28 +65,28 @@
             android:gravity="center">
 
             <Button
-                android:id="@+id/button1"
+                android:id="@+id/button_start"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="0dp"
                 android:text="START" />
 
             <Button
-                android:id="@+id/button2"
+                android:id="@+id/button_pause"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="5dp"
                 android:text="PAUSE" />
 
             <Button
-                android:id="@+id/button_load"
+                android:id="@+id/button_reset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="10dp"
-                android:text="LOAD" />
+                android:layout_marginHorizontal="5dp"
+                android:text="RESET" />
         </LinearLayout>
 
-        <!-- RESET, SAVE Buttons -->
+        <!-- SAVE Button -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -95,18 +95,11 @@
             android:gravity="center">
 
             <Button
-                android:id="@+id/button3"
+                android:id="@+id/button_save"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="5dp"
-                android:text="RESET" />
-
-            <Button
-                android:id="@+id/button4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="5dp"
-                android:text="SAVE" />
+                android:text="SAVE JUMP STATISTICS" />
         </LinearLayout>
 
         <!-- Divider -->

@@ -97,9 +97,11 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
 
     private long prev_time = 0;
 
-    private int estimatedSteps = 0;
+    private int estimatedJumps = 0;
 
     private double threshold = 9.3;
+
+    int flagAlreadySaved = 0;
 
 
 
@@ -197,16 +199,17 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         // Initialize the MPAndroidChart
         initChart();
 
-        Button buttonStart = view.findViewById(R.id.button1);
+        Button buttonStart = view.findViewById(R.id.button_start);
         if (buttonStart != null) {
             buttonStart.setOnClickListener(v -> {
              Toast.makeText(getContext(), "Recording Started!", Toast.LENGTH_SHORT).show();
              startedPlot = true;
              startTime = System.currentTimeMillis();
+             flagAlreadySaved = 0;
             });
         }
 
-        Button buttonPause = view.findViewById(R.id.button2);
+        Button buttonPause = view.findViewById(R.id.button_pause);
         if (buttonPause != null) {
             buttonPause.setOnClickListener(v -> {
                 startedPlot = false;
@@ -214,7 +217,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             });
         }
 
-        Button buttonReset = view.findViewById(R.id.button3);
+        Button buttonReset = view.findViewById(R.id.button_reset);
         if (buttonReset != null) {
             buttonReset.setOnClickListener(v -> {
                 LineData currentData = mpLineChart.getData();
@@ -224,9 +227,9 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                     if (lineDataSetY != null) lineDataSetY.clear();
                     if (lineDataSetZ != null) lineDataSetZ.clear();
                     if (lineDataSetN != null) lineDataSetN.clear();
-                    estimatedSteps = 0;
+                    estimatedJumps = 0;
                     TextView stepView = getView().findViewById(R.id.dynamic_jumps);
-                    stepView.setText(String.valueOf(estimatedSteps));
+                    stepView.setText(String.valueOf(estimatedJumps));
                     mpLineChart.notifyDataSetChanged();
                     mpLineChart.invalidate();
                 }
@@ -238,25 +241,24 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
 
 
 
-        Button saveButton = view.findViewById(R.id.button4);
+        Button saveButton = view.findViewById(R.id.button_save);
 
         if (saveButton != null) {
             saveButton.setOnClickListener(v -> {
-                showSaveDialog();
-
-
+                if (flagAlreadySaved == 0) {
+                    JumpDataManager.updateWeeklyData(requireContext(), estimatedJumps);
+                    flagAlreadySaved = 1;
+                    Toast.makeText(getContext(), "Jumps saved!", Toast.LENGTH_SHORT).show();
+                }
+                else if (estimatedJumps == 0)
+                {
+                    Toast.makeText(getContext(), "No jumps!", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(getContext(), "Jumps already saved!", Toast.LENGTH_SHORT).show();
+                }
             });
         }
-
-            Button loadButton = view.findViewById(R.id.button_load);
-            if (loadButton != null) {
-                loadButton.setOnClickListener(v -> {
-                    Intent intent = new Intent(getContext(), LoadDataActivity.class);
-                    startActivity(intent);
-                });
-            }
-
-
 
 
         return view;
@@ -464,12 +466,11 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         PyObject result = pyObject.callAttr("test_libraries"); // Call the Python function "get_jumps"
 
         // Get the result as a number
-        int jumps = result.toInt();
+        estimatedJumps = result.toInt();
 
         // Update the TextView dynamically
         TextView stepView = getView().findViewById(R.id.dynamic_jumps);
-        stepView.setText(String.valueOf(jumps));
-        JumpDataManager.updateWeeklyData(requireContext(), jumps);
+        stepView.setText(String.valueOf(estimatedJumps));
     }
 
     private void showSaveDialog() {
@@ -529,7 +530,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             csvBuilder.append("EXPERIMENT TIME:, ").append(LocalDateTime.now()).append("\n");
             csvBuilder.append("ACTIVITY TYPE:, ").append(activityType).append("\n");
             csvBuilder.append("COUNT OF ACTUAL STEPS:, ").append(numberOfSteps).append("\n");
-            csvBuilder.append("ESTIMATED NUMBER OF STEPS:, ").append(estimatedSteps).append("\n");
+            csvBuilder.append("ESTIMATED NUMBER OF STEPS:, ").append(estimatedJumps).append("\n");
             csvBuilder.append("\n"); // Blank row
 
             // Add header row for the tabular data
