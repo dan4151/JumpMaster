@@ -205,7 +205,7 @@ public class JumpDataManager {
 
     // debuging porpuse only
     public static void replaceOrCreateWeeklyFile(Context context) {
-        String fileName = "weekly_jumps_2025_01_19.csv";
+        String fileName = "weekly_jumps_2025_01_26.csv";
         File directory = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
         if (directory == null) {
             Log.e(TAG, "Could not access external storage directory");
@@ -219,13 +219,13 @@ public class JumpDataManager {
             writer.append("Date,Day of Week,Jumps\n");
 
             // Add new content with specific numbers
-            writer.append("2025-01-19,Sunday,70\n");
-            writer.append("2025-01-19,Monday,0\n");
-            writer.append("2025-01-19,Tuesday,30\n");
-            writer.append("2025-01-19,Wednesday,120\n");
-            writer.append("2025-01-19,Thursday,40\n");
-            writer.append("2025-01-19,Friday,10\n");
-            writer.append("2025-01-19,Saturday,49\n");
+            writer.append("2025-01-26,Sunday,194\n");
+            writer.append("2025-01-26,Monday,0\n");
+            writer.append("2025-01-26,Tuesday,321\n");
+            writer.append("2025-01-26,Wednesday,50\n");
+            writer.append("2025-01-26,Thursday,100\n");
+            writer.append("2025-01-26,Friday,203\n");
+            writer.append("2025-01-26,Saturday,0\n");
 
             if (!file.exists()) {
                 Log.i(TAG, "File created successfully: " + fileName);

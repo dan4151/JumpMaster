@@ -1,16 +1,15 @@
-<!-- res/layout/dialog_save.xml -->
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Session Name Input -->
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enter File Name"
-        android:textStyle="bold"
+        android:text="Session Name:"
         android:textSize="16sp"
         android:layout_marginBottom="8dp" />
 
@@ -18,30 +17,17 @@
         android:id="@+id/dialog_file_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="File name"
+        android:hint="Enter session name"
         android:inputType="text" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Enter Steps"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp" />
-
-    <EditText
-        android:id="@+id/dialog_steps"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Steps"
-        android:inputType="number" />
-
+    <!-- OK Button -->
     <Button
         android:id="@+id/dialog_ok_button"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="OK"
         android:layout_marginTop="16dp"
-        android:layout_gravity="center_horizontal" />
+        android:backgroundTint="@android:color/black"
+        android:textColor="@android:color/white" />
+
 </LinearLayout>

@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.speech.tts.TextToSpeech;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
@@ -45,7 +46,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import org.json.JSONArray;
+
 import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 /**
@@ -87,7 +95,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
 
     private int numberOfSteps = 0;
 
-    private String activityType = "None";
+    private String jumpingType = "None";
 
     private String save_file_name = "None";
 
@@ -99,10 +107,18 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
 
     private int estimatedJumps = 0;
 
-    private double threshold = 9.3;
+    private int lengthInterval = 0;
+
 
     int flagAlreadySaved = 0;
 
+    /** voice variables */
+    private int isFast = 0;
+    private TextToSpeech tts;
+    private Timer timer;
+    private Handler handler = new Handler();
+    private Runnable intervalTask = null;
+    private List<String> phaseList = new ArrayList<>();
 
 
     @Override
@@ -113,6 +129,15 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
 
         // Grab the device address from arguments
         deviceAddress = getArguments().getString("device");
+
+        //Text-to-speech
+        tts = new TextToSpeech(requireContext(), status -> {
+            if (status == TextToSpeech.SUCCESS) {
+                tts.setLanguage(Locale.US); // Set language to US English
+            } else {
+                Log.e("TTS", "Initialization failed");
+            }
+        });
     }
 
     @Override
@@ -122,6 +147,13 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         }
         requireActivity().stopService(new Intent(getActivity(), SerialService.class));
         super.onDestroy();
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
+        if (timer != null) {
+            timer.cancel();
+        }
     }
 
     @Override
@@ -195,24 +227,140 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         View view = inflater.inflate(R.layout.fragment_terminal, container, false);
 
         mpLineChart = view.findViewById(R.id.line_chart);
+        mpLineChart.setVisibility(View.GONE);
 
         // Initialize the MPAndroidChart
         initChart();
 
-        Button buttonStart = view.findViewById(R.id.button_start);
-        if (buttonStart != null) {
-            buttonStart.setOnClickListener(v -> {
-             Toast.makeText(getContext(), "Recording Started!", Toast.LENGTH_SHORT).show();
-             startedPlot = true;
-             startTime = System.currentTimeMillis();
-             flagAlreadySaved = 0;
+        Button buttonStartFreeStyle = view.findViewById(R.id.button_start_freestyle);
+        if (buttonStartFreeStyle != null) {
+            buttonStartFreeStyle.setOnClickListener(v -> {
+                jumpingType = "freestyle";
+                lengthInterval = 0;
+                Toast.makeText(getContext(), "Recording Started!", Toast.LENGTH_SHORT).show();
+
+                Handler handler = new Handler();
+                int countdownStart = 5;
+
+                // Countdown task
+                for (int i = countdownStart; i > 0; i--) {
+                    int finalI = i;
+                    handler.postDelayed(() -> {
+                        if (tts != null) {
+                            tts.speak(String.valueOf(finalI), TextToSpeech.QUEUE_FLUSH, null, null);
+                        }
+                    }, (countdownStart - finalI) * 1000L); // Delay based on countdown step
+                }
+
+                // "Start jumping" task
+                handler.postDelayed(() -> {
+                    if (tts != null) {
+                        tts.speak("Start jumping", TextToSpeech.QUEUE_FLUSH, null, null);
+                    }
+                    // Start the session after countdown
+                    startedPlot = true;
+                    startTime = System.currentTimeMillis();
+                    flagAlreadySaved = 0;
+                }, countdownStart * 1000L); // Delay after the countdown
             });
         }
+
+
+        // Declare the Handler and Runnable
+
+        Button buttonStartInterval = view.findViewById(R.id.button_start_interval);
+        if (buttonStartInterval != null) {
+            buttonStartInterval.setOnClickListener(v -> {
+                jumpingType = "interval";
+                // Create an AlertDialog to input interval length
+                AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+                builder.setTitle("Set Interval Length");
+
+                // Create the input field
+                final EditText input = new EditText(requireContext());
+                input.setHint("Enter interval length (seconds)");
+                input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+                builder.setView(input);
+
+                // Handle "OK" button click
+                builder.setPositiveButton("OK", (dialog, which) -> {
+                    // Retrieve input inside the positive button callback
+                    String inputText = input.getText().toString().trim();
+                    if (inputText.isEmpty()) {
+                        Toast.makeText(requireContext(), "Please enter a valid number!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    try {
+                        lengthInterval = Integer.parseInt(inputText);
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(requireContext(), "Invalid input!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Proceed with the countdown and interval logic
+                    Toast.makeText(requireContext(), "Recording will start soon!", Toast.LENGTH_SHORT).show();
+                    flagAlreadySaved = 0;
+
+                    // Cancel any existing task
+                    if (intervalTask != null) {
+                        handler.removeCallbacks(intervalTask);
+                    }
+
+                    int countdownStart = 5;
+
+                    // Countdown task
+                    for (int i = countdownStart; i > 0; i--) {
+                        int finalI = i;
+                        handler.postDelayed(() -> {
+                            if (tts != null) {
+                                tts.speak(String.valueOf(finalI), TextToSpeech.QUEUE_FLUSH, null, null);
+                            }
+                        }, (countdownStart - finalI) * 1000L); // Delay based on countdown step
+                    }
+
+                    // Start jump recording and slow/fast cycle after the countdown
+                    handler.postDelayed(() -> {
+                        // Start jump recording
+                        startedPlot = true;
+                        startTime = System.currentTimeMillis();
+
+                        // Define the task for slow/fast cycle
+                        intervalTask = new Runnable() {
+
+                            @Override
+                            public void run() {
+                                if (isAdded() && tts != null) { // Ensure the Fragment is attached
+                                    String message = (isFast == 1) ? "fast" : "slow";
+                                    // Speak the message
+                                    tts.speak(message, TextToSpeech.QUEUE_FLUSH, null, "TTS_MESSAGE");
+                                    isFast = (isFast == 1) ? 0 : 1;
+                                }
+
+                                // Schedule the task again after the user-defined interval length
+                                handler.postDelayed(this, lengthInterval * 1000L);
+                            }
+                        };
+
+                        // Start the task immediately
+                        handler.post(intervalTask);
+                    }, countdownStart * 1000L); // Start after the countdown finishes
+                });
+
+                // Handle "Cancel" button click
+                builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+                // Show the dialog
+                builder.create().show();
+            });
+        }
+
 
         Button buttonPause = view.findViewById(R.id.button_pause);
         if (buttonPause != null) {
             buttonPause.setOnClickListener(v -> {
                 startedPlot = false;
+                stopSpeechAndTask();
                 Toast.makeText(getContext(), "Recording paused!", Toast.LENGTH_SHORT).show();
             });
         }
@@ -220,6 +368,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         Button buttonReset = view.findViewById(R.id.button_reset);
         if (buttonReset != null) {
             buttonReset.setOnClickListener(v -> {
+                stopSpeechAndTask();
                 LineData currentData = mpLineChart.getData();
                 if (currentData != null) {
                     // Remove specific data sets from the chart
@@ -227,9 +376,11 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                     if (lineDataSetY != null) lineDataSetY.clear();
                     if (lineDataSetZ != null) lineDataSetZ.clear();
                     if (lineDataSetN != null) lineDataSetN.clear();
-                    estimatedJumps = 0;
+                    if (timeList != null) timeList.clear();
                     TextView stepView = getView().findViewById(R.id.dynamic_jumps);
-                    stepView.setText(String.valueOf(estimatedJumps));
+                    stepView.setText(String.valueOf(0));
+                    TextView stepView2 = getView().findViewById(R.id.rate_jumps);
+                    stepView2.setText(String.valueOf(0));
                     mpLineChart.notifyDataSetChanged();
                     mpLineChart.invalidate();
                 }
@@ -245,6 +396,8 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
 
         if (saveButton != null) {
             saveButton.setOnClickListener(v -> {
+                stopSpeechAndTask();
+                showSaveDialog();
                 if (flagAlreadySaved == 0) {
                     JumpDataManager.updateWeeklyData(requireContext(), estimatedJumps);
                     flagAlreadySaved = 1;
@@ -433,8 +586,11 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
             return;
 
 
+        String phase = (isFast == 1) ? "Fast" : "Slow";
+        phaseList.add(phase); // Add the phase to the phase list
+
         Log.d("TerminalFragment", "addDataToChart() idx=" + pointIndex
-                + " N=" + nVal);
+                + " N=" + nVal + " Phase=" + phase);
 
         // If the chart was showing "Waiting for data...", hide that text
         mpLineChart.setNoDataText("");
@@ -463,14 +619,43 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
 
         // Call the Python function
         PyObject pyObject = py.getModule("script"); // Replace with your Python file name (without .py extension)
-        PyObject result = pyObject.callAttr("test_libraries"); // Call the Python function "get_jumps"
 
+        List<Float> yValues = new ArrayList<>();
+
+        for (Entry entry : lineDataSetZ.getValues()) {
+            yValues.add(entry.getY());
+        }
+        ArrayList<Entry> entries = (ArrayList<Entry>) lineDataSetZ.getValues();
+     //   float[] valuesZ = new float[entries.size()];
+     //   float[] timevals = new float[entries.size()];
+
+    //    for (int i = 0; i < entries.size(); i++) {
+      //      valuesZ[i] = entries.get(i).getY(); // Get the Y value of each entry
+      //      timevals[i] = timeList.get(i); // Get the Y value of each entry
+      //  }
+
+        JSONArray jsonArray = new JSONArray(yValues);
+        String valuesZ = jsonArray.toString();
+        JSONArray jsonArraytime = new JSONArray(timeList);
+        String valuesTime = jsonArraytime.toString();
+
+        PyObject result = pyObject.callAttr("smooth_and_find_extrema", valuesZ, valuesTime, false); // Call the Python function "get_jumps"
+        Map<PyObject, PyObject> rawMap = result.asMap();
+        Map<String, PyObject> resultMap = new HashMap<>();
+        for (Map.Entry<PyObject, PyObject> entry : rawMap.entrySet()) {
+            resultMap.put(entry.getKey().toString(), entry.getValue());
+        }
+
+        // Parse result
+        int totalJumps = resultMap.get("jumps").toInt();
+        double avgSpeed = resultMap.get("rate_of_jumps").toDouble();
         // Get the result as a number
-        estimatedJumps = result.toInt();
-
         // Update the TextView dynamically
+
         TextView stepView = getView().findViewById(R.id.dynamic_jumps);
-        stepView.setText(String.valueOf(estimatedJumps));
+        stepView.setText(String.valueOf(totalJumps));
+        TextView stepView2 = getView().findViewById(R.id.rate_jumps);
+        stepView2.setText(String.valueOf(Math.round(avgSpeed* 100.0) / 100.0));
     }
 
     private void showSaveDialog() {
@@ -478,64 +663,43 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         LayoutInflater inflater = LayoutInflater.from(requireContext());
         View dialogView = inflater.inflate(R.layout.dialog_save, null);
 
-        EditText fileNameInput = dialogView.findViewById(R.id.dialog_file_name);
-        EditText stepsInput = dialogView.findViewById(R.id.dialog_steps);
+        EditText sessionNameInput = dialogView.findViewById(R.id.dialog_file_name); // Renamed for clarity
         Button okButton = dialogView.findViewById(R.id.dialog_ok_button);
+
+        // Create an AlertDialog
         AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setView(dialogView)
                 .create();
 
-
-        // Create an AlertDialog
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setView(dialogView);
-
         okButton.setOnClickListener(v -> {
-            String fileName = fileNameInput.getText().toString().trim();
+            String sessionName = sessionNameInput.getText().toString().trim();
 
-            // Check if the file name is empty
-            if (fileName.isEmpty()) {
-                Toast.makeText(getContext(), "Please enter a file name!", Toast.LENGTH_SHORT).show();
+            // Check if the session name is empty
+            if (sessionName.isEmpty()) {
+                Toast.makeText(getContext(), "Please enter a session name!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            if (!fileName.matches("[a-zA-Z0-9_.-]+")) {
-                Toast.makeText(getContext(), "Invalid file name! Only alphanumeric characters, underscores, hyphens, and dots are allowed.", Toast.LENGTH_SHORT).show();
+            if (!sessionName.matches("[a-zA-Z0-9_.-]+")) {
+                Toast.makeText(getContext(), "Invalid session name! Only alphanumeric characters, underscores, hyphens, and dots are allowed.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            save_file_name = fileName;
+            save_file_name = sessionName;
 
-            try {
-                // Retrieve the input text from the EditText
-                String stepsText = stepsInput.getText().toString().trim();
-                if (stepsText.isEmpty()) {
-                    Toast.makeText(getContext(), "Please enter a valid number of steps!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                numberOfSteps = Integer.parseInt(stepsText);
-
-            } catch (NumberFormatException e) {
-                // Handle invalid input
-                Toast.makeText(getContext(), "Invalid input! Enter a valid number.", Toast.LENGTH_SHORT).show();
-            }
-            Log.d("ok_button", "ok_button: " + numberOfSteps + save_file_name);
+            Log.d("ok_button", "ok_button: " + save_file_name);
 
             // Prepare the CSV data
             StringBuilder csvBuilder = new StringBuilder();
-
             // Add metadata
             csvBuilder.append("NAME:, ").append(save_file_name).append("\n");
             csvBuilder.append("EXPERIMENT TIME:, ").append(LocalDateTime.now()).append("\n");
-            csvBuilder.append("ACTIVITY TYPE:, ").append(activityType).append("\n");
-            csvBuilder.append("COUNT OF ACTUAL STEPS:, ").append(numberOfSteps).append("\n");
-            csvBuilder.append("ESTIMATED NUMBER OF STEPS:, ").append(estimatedJumps).append("\n");
+            csvBuilder.append("JUMPING TYPE:, ").append(jumpingType).append("\n");
+            csvBuilder.append("INTERVAL LENGTH:, ").append(lengthInterval).append("\n");
             csvBuilder.append("\n"); // Blank row
 
             // Add header row for the tabular data
-            csvBuilder.append("Time [sec], ACC X, ACC Y, ACC Z, GYRO X, GYRO Y, GYRO Z, N\n");
-
+            csvBuilder.append("Time [sec], ACC X, ACC Y, ACC Z, GYRO X, GYRO Y, GYRO Z, N, Phase\n");
 
             for (int i = 0; i < lineDataSetN.getEntryCount(); i++) {
                 // Get ACC X, Y, Z values (if available)
@@ -543,22 +707,23 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                 float accY = lineDataSetY.getEntryForIndex(i).getY();
                 float accZ = lineDataSetZ.getEntryForIndex(i).getY();
                 float nValue = lineDataSetN.getEntryForIndex(i).getY();
+                String phase = phaseList.get(i);
 
                 Log.d("CHECK SAVE VALUES", "accX= " + accX + " accY= " + accY + " accZ= " + accZ + " nValue= " + nValue);
 
-
                 // Append the row to CSV
-                csvBuilder.append(timeList.get(i)).append(", ")
-                        .append(accX).append(", ")
-                        .append(accY).append(", ")
-                        .append(accZ).append(", ")
-                        .append("0, 0, 0, ") // Placeholder for GYRO X, Y, Z (update if you have data)
-                        .append(nValue).append("\n");
+                csvBuilder.append(timeList.get(i)).append(",")
+                        .append(accX).append(",")
+                        .append(accY).append(",")
+                        .append(accZ).append(",")
+                        .append("0,0,0,") // Placeholder for GYRO X, Y, Z (update if you have data)
+                        .append(nValue).append(",")
+                        .append(phase).append("\n");
             }
 
             // Write the CSV data to a file
             try {
-                File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+                File dir = new File(requireContext().getExternalFilesDir(null), "");
                 File file = new File(dir, save_file_name + ".csv");
 
                 FileOutputStream fos = new FileOutputStream(file);
@@ -626,4 +791,26 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         Intent intent = new Intent(getContext(), LoadDataActivity.class);
         startActivity(intent);
     }
+
+    private void stopSpeechAndTask() {
+        if (intervalTask != null) {
+            handler.removeCallbacks(intervalTask); // Remove scheduled task
+        }
+        if (tts != null && tts.isSpeaking()) {
+            tts.stop(); // Stop any ongoing speech
+        }
+    }
+
+    public float[] convertLineDataSetToArray(LineDataSet dataSet) {
+        ArrayList<Entry> entries = (ArrayList<Entry>) dataSet.getValues();
+        float[] values = new float[entries.size()];
+
+        for (int i = 0; i < entries.size(); i++) {
+            values[i] = entries.get(i).getY(); // Get the Y value of each entry
+        }
+
+        return values;
+    }
+
+
 }

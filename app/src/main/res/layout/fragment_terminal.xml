@@ -12,16 +12,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Title -->
-        <TextView
-            android:id="@+id/title_average_jump"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Average Jump/Sec"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+        <!-- Removed Title: Average Jump/Sec -->
 
         <!-- Line Chart -->
         <com.github.mikephil.charting.charts.LineChart
@@ -43,7 +34,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Jumps:"
-                android:textSize="20sp"
+                android:textSize="30sp"
                 android:textStyle="bold"
                 android:layout_marginEnd="8dp" />
 
@@ -52,11 +43,48 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0"
-                android:textSize="20sp"
+                android:textSize="30sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- START, PAUSE, RESET Buttons -->
+        <!-- Jump Rate Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/rate_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Jump Rate:"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/rate_jumps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Select Jumping Mod Section -->
+        <TextView
+            android:id="@+id/select_jumping_mod"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select Jumping Mod:"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <!-- START FREESTYLE SESSION Button -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -65,11 +93,34 @@
             android:gravity="center">
 
             <Button
-                android:id="@+id/button_start"
+                android:id="@+id/button_start_freestyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="0dp"
-                android:text="START" />
+                android:text="START FREESTYLE SESSION" />
+        </LinearLayout>
+
+        <!-- START INTERVAL SESSION Button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/button_start_interval"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="START INTERVAL SESSION" />
+        </LinearLayout>
+
+        <!-- PAUSE, RESET Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:gravity="center">
 
             <Button
                 android:id="@+id/button_pause"

@@ -61,6 +61,8 @@ public class MainActivity extends AppCompatActivity
 
         // Create a cumulative data if not existing and save previous week if new week
         JumpDataManager.saveCumulativeData(this);
+
+        JumpDataManager.replaceOrCreateWeeklyFile(this);
     }
 
     // --------------------------------------------------

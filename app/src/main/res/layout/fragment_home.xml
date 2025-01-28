@@ -10,7 +10,7 @@
         android:id="@+id/app_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Welcome to the Jump Rope Tracker! This app helps you monitor your daily and weekly jump performance to stay motivated and achieve your fitness goals."
+        android:text="Welcome to the JumpMaster! This app helps you monitor your daily and weekly jump performance to stay motivated and achieve your fitness goals."
         android:textSize="16sp"
         android:paddingBottom="16dp"
         android:textStyle="normal" />
