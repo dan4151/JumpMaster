@@ -123,6 +123,39 @@ public class HomeFragment extends Fragment {
         barChart.invalidate(); // Refresh chart
     }
 
+    public void refreshChart(BarChart barChart) {
+        // Re-fetch weekly data
+        Map<String, Integer> weeklyData = JumpDataManager.readWeeklyData(requireContext());
+        Map<String, Float> dayAverages = JumpDataManager.calculateDayAverages(requireContext());
+
+        // Update the chart's data and colors
+        ArrayList<BarEntry> entries = new ArrayList<>();
+        ArrayList<Integer> colors = new ArrayList<>();
+        String[] daysOfWeek = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
+        for (int i = 0; i < daysOfWeek.length; i++) {
+            String day = daysOfWeek[i];
+            int jumps = weeklyData.getOrDefault(day, 0);
+            entries.add(new BarEntry(i, jumps));
+
+            float average = dayAverages.getOrDefault(day, -1f);
+            if (average == -1f || jumps == average) {
+                colors.add(getResources().getColor(android.R.color.black));
+            } else if (jumps < average) {
+                colors.add(getResources().getColor(android.R.color.holo_red_dark));
+            } else {
+                colors.add(getResources().getColor(android.R.color.holo_green_dark));
+            }
+        }
+
+        BarDataSet dataSet = new BarDataSet(entries, "Jumps Per Day");
+        dataSet.setColors(colors);
+
+        BarData barData = new BarData(dataSet);
+        barChart.setData(barData);
+        barChart.invalidate(); // Refresh chart
+    }
+
 
 
 }

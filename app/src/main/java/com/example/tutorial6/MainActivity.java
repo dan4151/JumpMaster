@@ -20,6 +20,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.github.mikephil.charting.charts.BarChart;
+
 
 public class MainActivity extends AppCompatActivity
         implements FragmentManager.OnBackStackChangedListener {
@@ -200,6 +202,15 @@ public class MainActivity extends AppCompatActivity
                                 "Please select a Bluetooth device first",
                                 Toast.LENGTH_SHORT).show();
                         return;
+                    }
+                    Fragment fragment = getSupportFragmentManager().findFragmentByTag("home");
+                    if (fragment instanceof HomeFragment) {
+                        // Call refreshChart if the fragment is already active
+                        HomeFragment homeFragment = (HomeFragment) fragment;
+                        BarChart barChart = homeFragment.getView().findViewById(R.id.bar_chart);
+                        if (barChart != null) {
+                            homeFragment.refreshChart(barChart);
+                        }
                     }
                     showFragment("home");
                 } else if (id == R.id.nav_jump_session) {

@@ -34,6 +34,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.chaquo.python.android.AndroidPlatform;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -45,7 +46,8 @@ import java.io.FileOutputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
+import com.chaquo.python.PyObject;
+import com.chaquo.python.Python;
 /**
  * FINAL TerminalFragment:
  *  - Always parses and plots ANY valid data (no isReceivingData flag).
@@ -428,12 +430,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                 )
             return;
 
-        if (nVal > threshold) {
-            estimatedSteps ++;
-            TextView stepView = getView().findViewById(R.id.dynamic_jumps);
-            stepView.setText(String.valueOf(estimatedSteps));
 
-        }
         Log.d("TerminalFragment", "addDataToChart() idx=" + pointIndex
                 + " N=" + nVal);
 
@@ -448,14 +445,31 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         lineDataSetY.addEntry(new Entry(pointIndex, yVal));
         lineDataSetZ.addEntry(new Entry(pointIndex, zVal));
         pointIndex++;
-
-        // Notify chart
         lineDataSetN.notifyDataSetChanged();
-
-
-        // if needed: data.notifyDataChanged();
         mpLineChart.notifyDataSetChanged();
         mpLineChart.invalidate();
+
+        //=========================================================
+        // Using python to calculate number of jumps and jump speed
+        //=========================================================
+
+        if (!Python.isStarted()) {
+            Python.start(new AndroidPlatform(requireContext()));
+
+        }
+        Python py = Python.getInstance();
+
+        // Call the Python function
+        PyObject pyObject = py.getModule("script"); // Replace with your Python file name (without .py extension)
+        PyObject result = pyObject.callAttr("test_libraries"); // Call the Python function "get_jumps"
+
+        // Get the result as a number
+        int jumps = result.toInt();
+
+        // Update the TextView dynamically
+        TextView stepView = getView().findViewById(R.id.dynamic_jumps);
+        stepView.setText(String.valueOf(jumps));
+        JumpDataManager.updateWeeklyData(requireContext(), jumps);
     }
 
     private void showSaveDialog() {
@@ -556,11 +570,6 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                 e.printStackTrace();
             }
 
-
-
-
-
-
             // Close the dialog
             dialog.dismiss();
         });
@@ -568,8 +577,6 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
         // Show the dialog
         dialog.show();
     }
-
-
 
 
     // ------------------------------------------------------------------------

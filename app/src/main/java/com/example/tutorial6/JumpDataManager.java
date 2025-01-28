@@ -4,6 +4,9 @@ package com.example.tutorial6;
 import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
+
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.HashSet;
 
 import java.io.BufferedReader;
@@ -347,7 +350,76 @@ public class JumpDataManager {
         return defaultAverages;
     }
 
+    public static void updateWeeklyData(Context context, int additionalJumps) {
+        // Get the current week's start date
+        String weekStartDate = new SimpleDateFormat("yyyy_MM_dd", Locale.getDefault())
+                .format(getStartOfWeek());
+
+        // Define the correct filename
+        String fileName = "weekly_jumps_" + weekStartDate + ".csv";
+        File directory = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+        if (directory == null) {
+            Log.w(TAG, "External storage directory not accessible");
+            return;
+        }
+
+        File file = new File(directory, fileName);
+
+        // Determine the current day of the week
+        String[] daysOfWeek = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+        Calendar calendar = Calendar.getInstance();
+        String currentDayOfWeek = daysOfWeek[calendar.get(Calendar.DAY_OF_WEEK) - 1];
+
+        Map<String, Integer> data = new LinkedHashMap<>();
+
+        // Read existing data from the file if it exists
+        if (file.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                boolean isHeader = true;
+                while ((line = reader.readLine()) != null) {
+                    if (isHeader) {
+                        isHeader = false;
+                        continue; // Skip the header line
+                    }
+
+                    String[] parts = line.split(",");
+                    if (parts.length >= 3) {
+                        String existingDay = parts[1].trim();
+                        int jumps = Integer.parseInt(parts[2].trim());
+                        data.put(existingDay, jumps);
+                    }
+                }
+            } catch (IOException e) {
+                Log.e(TAG, "Error reading weekly data file", e);
+            }
+        }
+
+        // Update the data for the current day of the week
+        int currentJumps = data.getOrDefault(currentDayOfWeek, 0);
+        data.put(currentDayOfWeek, currentJumps + additionalJumps);
+
+        // Write the updated data back to the file
+        try (FileOutputStream fos = new FileOutputStream(file);
+             PrintWriter writer = new PrintWriter(fos)) {
+
+            // Write the header
+            writer.println("Week Start Date,Day of Week,Jumps");
+
+            // Write the data
+            for (Map.Entry<String, Integer> entry : data.entrySet()) {
+                writer.printf("%s,%s,%d%n", weekStartDate, entry.getKey(), entry.getValue());
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Error writing weekly data file", e);
+        }
+    }
+
+
+
 }
+
+
 
 
 
