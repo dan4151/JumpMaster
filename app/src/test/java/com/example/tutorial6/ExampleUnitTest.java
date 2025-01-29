@@ -1,4 +1,4 @@
-package com.example.tutorial6;
+package com.example.JumpMaster;
 
 import org.junit.Test;
 

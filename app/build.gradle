@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.tutorial6'
+    namespace 'com.example.JumpMaster'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.tutorial6"
+        applicationId "com.example.JumpMaster"
         minSdk 28
         targetSdk 34
         versionCode 1

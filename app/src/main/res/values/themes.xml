@@ -1,8 +1,8 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="Base.Theme.Tutorial6" parent="Theme.Material3.Light.NoActionBar">
+    <style name="Base.Theme.JumpMaster" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
     </style>
 
-    <style name="Theme.Tutorial6" parent="Base.Theme.Tutorial6" />
+    <style name="Theme.JumpMaster" parent="Base.Theme.JumpMaster" />
 </resources>
